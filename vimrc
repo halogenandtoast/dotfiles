@@ -1,15 +1,17 @@
 set nocompatible
 filetype plugin indent on
 runtime macros/matchit.vim
+" set clipboard=unnamed
 set wildmode=list:longest
 set wildignore=*.o,*.obj,*~,*.swp
-" set backspace=indent,eol,start
 set backspace=
 set shortmess=atI
 set visualbell
+set isfname-=:
 nnoremap <C-L> :nohls<CR><C-L>
 inoremap <C-L> <C-O>:nohls<CR>
 
+noremap <BACKSPACE> ""
 :nmap <silent> <F5> :let _s=@/<Bar>:%s/\s\+$//e<Bar>:let @/=_s<Bar>:nohl<CR>
 
 set tabstop=2 softtabstop=2 shiftwidth=2 expandtab
@@ -18,6 +20,7 @@ set ttimeoutlen=50
 
 autocmd BufEnter *.haml setlocal cursorcolumn
 autocmd BufEnter *.sass setlocal cursorcolumn
+autocmd BufRead,BufNewFile *.jst set filetype=html
 
 silent execute '!mkdir -p ~/.vim_backups'
 set backupdir=~/.vim_backups//
@@ -32,20 +35,28 @@ set listchars=tab:>\ ,trail:•,extends:>,precedes:<,nbsp:+
 set list
 
 if has('gui_running')
-	set guioptions-=T
-	set guioptions-=m
+  set guioptions-=T
+  set guioptions-=m
   set guioptions-=r
   set guioptions-=L
   set guioptions-=t
 
-	set mousehide
+  set mousehide
   set guifont=Monaco:h16
 endif
 
 set number
 set numberwidth=5
 
-color molokai
+if has('gui_running')
+  set background=light
+  color solarized
+else
+  let g:solarized_termcolors=256
+  set background=light
+  color solarized
+endif
+call togglebg#map("<F6>")
 
 set hlsearch
 set incsearch
@@ -92,3 +103,72 @@ endfunction
 " Show relative line numbers
 noremap <Leader>l :call ToggleRelativeNumbers()<Enter>
 
+imap jk <Esc>
+imap kj <Esc>
+set pastetoggle=<F7>
+
+function MoveToPrevTab()
+  "there is only one window
+  if tabpagenr('$') == 1 && winnr('$') == 1
+    return
+  endif
+  "preparing new window
+  let l:tab_nr = tabpagenr('$')
+  let l:cur_buf = bufnr('%')
+  if tabpagenr() != 1
+    close!
+    if l:tab_nr == tabpagenr('$')
+      tabprev
+    endif
+    sp
+  else
+    close!
+    exe "0tabnew"
+  endif
+  "opening current buffer in new window
+  exe "b".l:cur_buf
+endfunc
+
+function MoveToNextTab()
+  "there is only one window
+  if tabpagenr('$') == 1 && winnr('$') == 1
+    return
+  endif
+  "preparing new window
+  let l:tab_nr = tabpagenr('$')
+  let l:cur_buf = bufnr('%')
+  if tabpagenr() < tab_nr
+    close!
+    if l:tab_nr == tabpagenr('$')
+      tabnext
+    endif
+    sp
+  else
+    close!
+    tabnew
+  endif
+  "opening current buffer in new window
+  exe "b".l:cur_buf
+endfunc
+
+function! OpenWithLineNumber()
+  let l:list = split(expand("%"), ":")
+  let l:filename = list[0]
+  let l:filenum = get(list, 1)
+  exe 'e! '. filename
+  exe ':'.filenum
+endfunction
+noremap <Leader>] :call OpenWithLineNumber()<Enter>
+
+function! RenameFile(new_name)
+  exe 'sav '.expand("%:p:h").'/'.a:new_name
+  call delete(expand("#"))
+endfunction
+
+command! -nargs=1 Rename call RenameFile(<f-args>)
+
+nnoremap ≥ :call MoveToNextTab()<CR>
+nnoremap ≤ :call MoveToPrevTab()<CR>
+
+command DiffOrig vert new | set bt=nofile | r # | 0d_ | diffthis
+       \ | wincmd p | diffthis
