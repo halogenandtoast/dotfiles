@@ -1,2 +1,0 @@
-screen.vba: call delete('/Users/mmongeau/.vim/plugin/screen.vim')|call delete('/Users/mmongeau/.vim/doc/screen.txt')
-Align.vba: call delete('/Users/mmongeau/.vim/plugin/AlignPlugin.vim')|call delete('/Users/mmongeau/.vim/plugin/AlignMapsPlugin.vim')|call delete('/Users/mmongeau/.vim/plugin/cecutil.vim')|call delete('/Users/mmongeau/.vim/doc/Align.txt')|call delete('/Users/mmongeau/.vim/autoload/Align.vim')|call delete('/Users/mmongeau/.vim/autoload/AlignMaps.vim')
